@@ -46,24 +46,31 @@ cat(sprintf("theta = %.4f (SE = %.4f)\n", hat_theta, se_theta))
 cat(sprintf("logLik = %.4f | AIC = %.2f | BIC = %.2f\n", logLik, AIC, BIC))
 cat("========================================\n")
 
-# 8?????? Plot histogram, PDF, and CDF overlays (with centered ticks)
-h <- hist(x, prob = TRUE, breaks = 30,
-          main = "EZ Fit to Vinyl Chloride Data - PDF & CDF",
-          xlab = "Vinyl Chloride (mg/L)",
-          xaxt = "n")
+# 8A. Plot PDF with histogram
+hist(x, prob = TRUE, breaks = 30,
+     main = " ",
+     xlab = "Vinyl Chloride (mg/L)",
+     xaxt = "n", col = "lightgray", border = "white")
 
+# Center tick labels under each bar
+h <- hist(x, plot = FALSE, breaks = 30)
 axis(side = 1, at = h$mids, labels = round(h$mids, 2))
 
+# Add EZ PDF curve
 curve({
   theta <- hat_theta; c <- hat_c
-  c * theta^3 * x * (1 + x) * exp(-theta*x) / (theta + 2) *
-    (1 - (1 + theta*x + (theta^2 * x^2)/(theta + 2)) * exp(-theta*x))^(c - 1)
-}, from = min(x), to = max(x),
-add = TRUE, col = "blue", lwd = 2, n = 200)
+  c * theta^3 * x * (1 + x) * exp(-theta * x) / (theta + 2) *
+    (1 - (1 + theta * x + (theta^2 * x^2)/(theta + 2)) * exp(-theta * x))^(c - 1)
+}, from = min(x), to = max(x), add = TRUE,
+col = "blue", lwd = 2, n = 200)
 
-par(new = TRUE)
-plot(ecdf(x), verticals = FALSE, do.points = FALSE,
-     axes = FALSE, main = " ", xlab = "", ylab = "",
+legend("topright", legend = "EZ PDF", col = "blue", lwd = 2)
+
+# 8B. Plot CDF (empirical and theoretical)
+plot(ecdf(x), verticals = TRUE, do.points = FALSE,
+     main = " ",
+     xlab = "Vinyl Chloride (mg/L)",
+     ylab = "Cumulative Probability",
      col = "darkgreen", lwd = 2)
 
 curve({
@@ -71,11 +78,10 @@ curve({
   u <- 1 - (1 + theta * x + (theta^2 * x^2)/(theta + 2)) * exp(-theta * x)
   u^c
 }, from = min(x), to = max(x), add = TRUE,
-col = "darkgreen", lwd = 2, n = 200)
+col = "green3", lwd = 2, n = 200)
 
-axis(side = 4, at = seq(0, 1, by = 0.2))
-mtext("Cumulative Probability", side = 4, line = 3)
+legend("bottomright",
+       legend = c("Empirical CDF", "EZ CDF"),
+       col = c("darkgreen", "green3"),
+       lwd = 2)
 
-legend("topright",
-       legend = c("EZ PDF", "Empirical & EZ CDF"),
-       col = c("blue", "darkgreen"), lwd = 2)
